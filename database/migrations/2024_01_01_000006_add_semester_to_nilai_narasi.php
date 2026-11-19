@@ -8,26 +8,43 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Tambah semester & tahun_ajaran ke tabel nilai
-        Schema::table('nilai', function (Blueprint $table) {
-            $table->string('semester', 10)->default('1')->after('nilai_uas');
-            $table->string('tahun_ajaran', 15)->default('2024/2025')->after('semester');
-        });
+        // Tabel nilai
+        if (Schema::hasTable('nilai')) {
+            Schema::table('nilai', function (Blueprint $table) {
+                if (!Schema::hasColumn('nilai', 'semester')) {
+                    $table->string('semester', 10)->default('1')->after('nilai_uas');
+                }
+                if (!Schema::hasColumn('nilai', 'tahun_ajaran')) {
+                    $table->string('tahun_ajaran', 15)->default('2024/2025')->after('semester');
+                }
+            });
+        }
 
-        // Tambah semester & tahun_ajaran ke tabel narasi_capaian
-        Schema::table('narasi_capaian', function (Blueprint $table) {
-            $table->string('semester', 10)->default('1')->after('status');
-            $table->string('tahun_ajaran', 15)->default('2024/2025')->after('semester');
-        });
+        // Tabel narasi (jika ada)
+        if (Schema::hasTable('narasi')) {
+            Schema::table('narasi', function (Blueprint $table) {
+                if (!Schema::hasColumn('narasi', 'semester')) {
+                    $table->string('semester', 10)->default('1')->after('narasi');
+                }
+                if (!Schema::hasColumn('narasi', 'tahun_ajaran')) {
+                    $table->string('tahun_ajaran', 15)->default('2024/2025')->after('semester');
+                }
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('nilai', function (Blueprint $table) {
-            $table->dropColumn(['semester', 'tahun_ajaran']);
-        });
-        Schema::table('narasi_capaian', function (Blueprint $table) {
-            $table->dropColumn(['semester', 'tahun_ajaran']);
-        });
+        if (Schema::hasTable('nilai')) {
+            Schema::table('nilai', function (Blueprint $table) {
+                $table->dropColumn(['semester', 'tahun_ajaran']);
+            });
+        }
+
+        if (Schema::hasTable('narasi')) {
+            Schema::table('narasi', function (Blueprint $table) {
+                $table->dropColumn(['semester', 'tahun_ajaran']);
+            });
+        }
     }
 };
