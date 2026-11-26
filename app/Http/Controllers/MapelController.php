@@ -18,13 +18,15 @@ class MapelController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'nama_mapel'  => 'required|string|max:100',
-            'kelas'       => 'required|string|max:20',
-            'guru_id'     => 'nullable|exists:users,id',
+        $validated = $request->validate([
+            'kode'    => 'required|string|max:20',
+            'nama'    => 'required|string|max:255',
+            'kelas'   => 'nullable|string|max:20',
+            'fase'    => 'nullable|string|max:5',
+            'guru_id' => 'nullable|exists:users,id',
         ]);
 
-        $mapel = MataPelajaran::create($request->only(['nama_mapel', 'kelas', 'guru_id']));
+        $mapel = MataPelajaran::create($validated);
         return response()->json($mapel, 201);
     }
 
@@ -36,14 +38,17 @@ class MapelController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'nama_mapel'  => 'sometimes|required|string|max:100',
-            'kelas'       => 'sometimes|required|string|max:20',
-            'guru_id'     => 'nullable|exists:users,id',
+        $mapel = MataPelajaran::findOrFail($id);
+
+        $validated = $request->validate([
+            'kode'    => 'sometimes|required|string|max:20',
+            'nama'    => 'sometimes|required|string|max:255',
+            'kelas'   => 'nullable|string|max:20',
+            'fase'    => 'nullable|string|max:5',
+            'guru_id' => 'nullable|exists:users,id',
         ]);
 
-        $mapel = MataPelajaran::findOrFail($id);
-        $mapel->update($request->only(['nama_mapel', 'kelas', 'guru_id']));
+        $mapel->update($validated);
         return response()->json($mapel);
     }
 
@@ -58,37 +63,38 @@ class MapelController extends Controller
 
     public function tpIndex($mapelId)
     {
-        $tp = TujuanPembelajaran::where('mapel_id', $mapelId)->get();
+        MataPelajaran::findOrFail($mapelId);
+        $tp = TujuanPembelajaran::where('mapel_id', $mapelId)
+            ->orderBy('kode')
+            ->get();
         return response()->json($tp);
     }
 
     public function tpStore(Request $request, $mapelId)
     {
-        $request->validate([
-            'deskripsi' => 'required|string',
-            'nomor_tp'  => 'required|integer|min:1',
-        ]);
-
-        // Pastikan mapel ada
         MataPelajaran::findOrFail($mapelId);
 
-        $tp = TujuanPembelajaran::create([
-            'mapel_id'  => $mapelId,
-            'deskripsi' => $request->deskripsi,
-            'nomor_tp'  => $request->nomor_tp,
+        $validated = $request->validate([
+            'kode'      => 'required|string|max:20',
+            'deskripsi' => 'required|string',
         ]);
+
+        $validated['mapel_id'] = $mapelId;
+
+        $tp = TujuanPembelajaran::create($validated);
         return response()->json($tp, 201);
     }
 
     public function tpUpdate(Request $request, $mapelId, $tpId)
     {
-        $request->validate([
+        $tp = TujuanPembelajaran::where('mapel_id', $mapelId)->findOrFail($tpId);
+
+        $validated = $request->validate([
+            'kode'      => 'sometimes|required|string|max:20',
             'deskripsi' => 'sometimes|required|string',
-            'nomor_tp'  => 'sometimes|required|integer|min:1',
         ]);
 
-        $tp = TujuanPembelajaran::where('mapel_id', $mapelId)->findOrFail($tpId);
-        $tp->update($request->only(['deskripsi', 'nomor_tp']));
+        $tp->update($validated);
         return response()->json($tp);
     }
 

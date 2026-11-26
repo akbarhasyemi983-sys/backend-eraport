@@ -29,12 +29,15 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nis'          => 'required|string|unique:siswa',
-            'nama'         => 'required|string',
-            'kelas'        => 'required|string',
-            'jenis_kelamin'=> 'required|in:L,P',
-            'nama_ortu'    => 'nullable|string',
-            'no_hp_ortu'   => 'nullable|string',
+            'nis'           => 'required|string|unique:siswa',
+            'nisn'          => 'nullable|string|max:20',   // ← TAMBAHAN
+            'nama'          => 'required|string',
+            'kelas'         => 'required|string',
+            'jenis_kelamin' => 'required|in:L,P',
+            'nama_ortu'     => 'nullable|string',
+            'no_hp_ortu'    => 'nullable|string',
+            'tahun_ajaran'  => 'nullable|string',          // ← TAMBAHAN
+            'semester'      => 'nullable|string',          // ← TAMBAHAN
         ]);
 
         $siswa = Siswa::create($validated);
@@ -52,12 +55,15 @@ class SiswaController extends Controller
         $siswa = Siswa::findOrFail($id);
 
         $validated = $request->validate([
-            'nis'          => 'sometimes|string|unique:siswa,nis,' . $id,
-            'nama'         => 'sometimes|string',
-            'kelas'        => 'sometimes|string',
-            'jenis_kelamin'=> 'sometimes|in:L,P',
-            'nama_ortu'    => 'nullable|string',
-            'no_hp_ortu'   => 'nullable|string',
+            'nis'           => 'sometimes|string|unique:siswa,nis,' . $id,
+            'nisn'          => 'nullable|string|max:20',   // ← TAMBAHAN
+            'nama'          => 'sometimes|string',
+            'kelas'         => 'sometimes|string',
+            'jenis_kelamin' => 'sometimes|in:L,P',
+            'nama_ortu'     => 'nullable|string',
+            'no_hp_ortu'    => 'nullable|string',
+            'tahun_ajaran'  => 'nullable|string',          // ← TAMBAHAN
+            'semester'      => 'nullable|string',          // ← TAMBAHAN
         ]);
 
         $siswa->update($validated);
