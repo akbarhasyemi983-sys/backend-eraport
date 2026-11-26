@@ -3,44 +3,54 @@
 namespace App\Http\Controllers;
 
 use App\Models\TujuanPembelajaran;
+use App\Models\MataPelajaran;
 use Illuminate\Http\Request;
 
 class TujuanPembelajaranController extends Controller
 {
-    public function index(Request $request)
+    // GET /api/mapel/{mapelId}/tp
+    public function index($mapelId)
     {
-        $query = TujuanPembelajaran::with('mapel');
-        if ($request->has('mapel_id')) {
-            $query->where('mapel_id', $request->mapel_id);
-        }
-        return response()->json($query->get());
-    }
-
-    public function show($id)
-    {
-        return response()->json(TujuanPembelajaran::with('mapel')->findOrFail($id));
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'mapel_id'   => 'required|exists:mata_pelajaran,id',
-            'kode'       => 'required|string',
-            'deskripsi'  => 'required|string',
-        ]);
-        return response()->json(TujuanPembelajaran::create($validated), 201);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $tp = TujuanPembelajaran::findOrFail($id);
-        $tp->update($request->all());
+        MataPelajaran::findOrFail($mapelId); // 404 jika mapel tidak ada
+        $tp = TujuanPembelajaran::where('mapel_id', $mapelId)->get();
         return response()->json($tp);
     }
 
-    public function destroy($id)
+    // GET /api/mapel/{mapelId}/tp/{id}
+    public function show($mapelId, $id)
     {
-        TujuanPembelajaran::findOrFail($id)->delete();
+        $tp = TujuanPembelajaran::where('mapel_id', $mapelId)->findOrFail($id);
+        return response()->json($tp);
+    }
+
+    // POST /api/mapel/{mapelId}/tp
+    public function store(Request $request, $mapelId)
+    {
+        MataPelajaran::findOrFail($mapelId);
+
+        $validated = $request->validate([
+            'kode'      => 'required|string|max:20',
+            'deskripsi' => 'required|string',
+        ]);
+
+        $validated['mapel_id'] = $mapelId;
+
+        return response()->json(TujuanPembelajaran::create($validated), 201);
+    }
+
+    // PUT /api/mapel/{mapelId}/tp/{id}
+    public function update(Request $request, $mapelId, $id)
+    {
+        $tp = TujuanPembelajaran::where('mapel_id', $mapelId)->findOrFail($id);
+        $tp->update($request->only(['kode', 'deskripsi']));
+        return response()->json($tp);
+    }
+
+    // DELETE /api/mapel/{mapelId}/tp/{id}
+    public function destroy($mapelId, $id)
+    {
+        $tp = TujuanPembelajaran::where('mapel_id', $mapelId)->findOrFail($id);
+        $tp->delete();
         return response()->json(['message' => 'TP berhasil dihapus']);
     }
 }
